@@ -1,8 +1,9 @@
+from exceptions import MatchDoesntHaveInfo
 import pandas as pd
 import numpy as np
 import requests
 
-def process_coordinates(df, hasEnd=True):
+def _process_coordinates(df, hasEnd=True):
     df['x'] = df['coord'].apply(lambda x: x['1']['x'])
     df['y'] = df['coord'].apply(lambda x: x['1']['y'])
     
@@ -28,13 +29,13 @@ def process_coordinates(df, hasEnd=True):
     df.drop('coord', axis=1, inplace=True)
     return df
 
-def process_time(df):
+def _process_time(df):
     df['minute'] = df.apply(lambda row: row['t']['m'] if row['t']['half'] == 1 else row['t']['m'], axis=1)
     df['seconds'] = df.apply(lambda row: row['t']['s'], axis=1)
     df.drop('t', axis=1, inplace=True)
     return df
 
-def get_player_name(player_id, data):
+def _get_player_name(player_id, data):
     if pd.isna(player_id):
         return None
     player_id = int(player_id)
@@ -54,6 +55,9 @@ def get_request(league, match_id):
     return response.json()
 
 def get_match_passes(data, all_passes=True):
+    if data['incidences']['correctPasses'] == {}:
+        raise MatchDoesntHaveInfo
+        
     passes = data['incidences']['correctPasses']
     df = pd.DataFrame.from_dict(passes, orient='index')
 
@@ -62,11 +66,11 @@ def get_match_passes(data, all_passes=True):
         df_incorrect = pd.DataFrame.from_dict(incorrect_passes, orient='index')
         df = pd.concat([df, df_incorrect])
 
-    df = process_coordinates(df)
-    df = process_time(df)
+    df = _process_coordinates(df)
+    df = _process_time(df)
 
-    df['playerName'] = df['plyrId'].apply(lambda x: get_player_name(x, data))
-    df['reciverName'] = df['recvId'].apply(lambda x: get_player_name(x, data))
+    df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
+    df['reciverName'] = df['recvId'].apply(lambda x: _get_player_name(x, data))
 
     df['beggining'] = np.sqrt(np.square(100 - df['x']) + np.square(50 - df['y']))
     df['end'] = np.sqrt(np.square(100 - df['endX']) + np.square(50 - df['endY']))
@@ -87,12 +91,12 @@ def get_shotmap(data):
     shots = data['incidences']['shots']
     df = pd.DataFrame.from_dict(shots, orient='index')
 
-    df = process_coordinates(df)
-    df = process_time(df)
+    df = _process_coordinates(df)
+    df = _process_time(df)
 
-    df['playerName'] = df['plyrId'].apply(lambda x: get_player_name(x, data))
-    df['assistName'] = df['assBy'].apply(lambda x: get_player_name(x, data))
-    df['catchName'] = df['ctchBy'].apply(lambda x: get_player_name(x, data))
+    df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
+    df['assistName'] = df['assBy'].apply(lambda x: _get_player_name(x, data))
+    df['catchName'] = df['ctchBy'].apply(lambda x: _get_player_name(x, data))
 
     conditions = [
         df['type'].isin([9, 11, 13]),
@@ -117,11 +121,11 @@ def get_fouls_map(data):
     fouls = data['incidences']['fouls']
     df = pd.DataFrame.from_dict(fouls, orient='index')
 
-    df = process_coordinates(df, hasEnd=False)
-    df = process_time(df)
+    df = _process_coordinates(df, hasEnd=False)
+    df = _process_time(df)
 
-    df['fouledName'] = df['recvId'].apply(lambda x: get_player_name(x, data))
-    df['playerName'] = df['plyrId'].apply(lambda x: get_player_name(x, data))
+    df['fouledName'] = df['recvId'].apply(lambda x: _get_player_name(x, data))
+    df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
 
     df = df.rename(columns={
         'team': 'teamId',
@@ -138,10 +142,10 @@ def get_throwin(data):
     throwin = data['incidences']['throwIn']
     df = pd.DataFrame.from_dict(throwin, orient='index')
     
-    df = process_coordinates(df)
-    df = process_time(df)
+    df = _process_coordinates(df)
+    df = _process_time(df)
     
-    df['playerName'] = df['plyrId'].apply(lambda x: get_player_name(x, data))
+    df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
     
     df = df.rename(columns={
         'team': 'teamId',
