@@ -133,3 +133,21 @@ def get_fouls_map(data):
     df = df.reset_index(drop=True)
 
     return df
+
+def get_throwin(data):
+    throwin = data['incidences']['throwIn']
+    df = pd.DataFrame.from_dict(throwin, orient='index')
+    
+    df = process_coordinates(df)
+    df = process_time(df)
+    
+    df['playerName'] = df['plyrId'].apply(lambda x: get_player_name(x, data))
+    
+    df = df.rename(columns={
+        'team': 'teamId',
+        'plyrId': 'playerId'
+    })
+    
+    df = df.reset_index(drop=True)
+    
+    return df
