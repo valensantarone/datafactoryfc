@@ -118,7 +118,7 @@ def get_passes(match_input, all_passes=True):
 
     df['beginning'] = np.hypot(100 - df['x'], 50 - df['y'])
     df['end'] = np.hypot(100 - df['endX'], 50 - df['endY'])
-    df['isProgressive'] = df['end'] / df['beginning'] < 0.75
+    df['isProgressive'] = np.where((df['end'] / df['beginning'] < 0.75) & (df['recvId'].notna()), True, False)
 
     df.rename(columns={'team': 'teamId', 'plyrId': 'playerId', 'recvId': 'receiverId'}, inplace=True)
     df['teamName'] = df['teamId'].apply(lambda team_id: _get_team_name(team_id, data))
@@ -145,10 +145,20 @@ def get_shots(match_input):
     df = _process_time(df)
 
     df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
-    df['assistName'] = df['assBy'].apply(lambda x: _get_player_name(x, data))
-    df['catchName'] = df['ctchBy'].apply(lambda x: _get_player_name(x, data))
+    
+    if 'assBy' in df.columns:
+        df['assistName'] = df['assBy'].apply(lambda x: _get_player_name(x, data))
+    else:
+        df['assistId'] = None
+        df['assistName'] = None
+        
+    if 'ctchBy' in df.columns:
+        df['catchName'] = df['ctchBy'].apply(lambda x: _get_player_name(x, data))
+    else:
+        df['catchId'] = None
+        df['catchName'] = None
 
-    conditions = [df['type'].isin([9, 11, 13]), df['type'] == 33]
+    conditions = [df['type'].isin(range(9, 14)), df['type'] == 33]
     outcomes = ['Goal', 'On Target']
     df['outcome'] = np.select(conditions, outcomes, default='Missed')
 
