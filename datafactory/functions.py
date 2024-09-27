@@ -217,3 +217,27 @@ def get_throwin(match_input):
     df = df.reset_index(drop=True)
     
     return df
+
+def get_corners(match_input):
+    
+    data = _match_input_validation(match_input)
+    
+    corners = data['incidences']['cornerKicks']
+    df = pd.DataFrame.from_dict(corners, orient='index')
+
+    df = _process_coordinates(df)
+    df = _process_time(df)
+    
+    df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
+    
+    df = df.rename(columns={
+        'team': 'teamId',
+        'plyrId': 'playerId'
+    })
+    
+    df['teamName'] = df['teamId'].apply(lambda team_id: _get_team_name(team_id, data))
+    
+    df = df[['teamId', 'teamName', 'minute', 'seconds', 'playerId', 'playerName', 'x', 'y', 'endX', 'endY']]
+    df = df.reset_index(drop=True)
+    
+    return df
