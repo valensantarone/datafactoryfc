@@ -7,7 +7,7 @@ def _match_input_validation(match_input):
     if isinstance(match_input, list):
         if len(match_input) == 2 and isinstance(match_input[0], str) and isinstance(match_input[1], int):
             league, match_id = match_input
-            data = get_request(league, match_id)
+            data = get_data(league, match_id)
         else:
             raise InvalidMatchInput
     elif isinstance(match_input, dict):
@@ -70,7 +70,7 @@ def _get_team_name(team_id, data):
         return data['match']['awayTeamName']
     return None
 
-def get_request(league, match_id):
+def get_data(league, match_id):
     """Fetch match data from API in JSON format.
     
     Args:
@@ -126,7 +126,7 @@ def get_passes(match_input, all_passes=True):
     df = df[['teamId', 'teamName', 'minute', 'seconds', 'playerId', 'playerName', 'receiverId', 'receiverName', 'x', 'y', 'endX', 'endY', 'isProgressive']]
     return df
 
-def get_shotmap(match_input):
+def get_shots(match_input):
     """Retrieve shot data from the match.
     
     Args:
@@ -186,7 +186,7 @@ def get_fouls(match_input):
     return df
 
 
-def get_throwin(match_input):
+def get_throwins(match_input):
     """Retrieve all throw-ins from both teams of a match.
     
     Args:
