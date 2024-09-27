@@ -219,6 +219,14 @@ def get_throwin(match_input):
     return df
 
 def get_corners(match_input):
+    """Retrieve all corner kicks from both teams of a match.
+    
+    Args:
+        match_input (list or dict): Either match data (JSON) or list with league and match_id.
+
+    Returns:
+        pd.DataFrame: DataFrame with corner kick information.
+    """
     
     data = _match_input_validation(match_input)
     
