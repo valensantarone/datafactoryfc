@@ -1,4 +1,4 @@
-from exceptions import MatchDoesntHaveInfo
+from .exceptions import MatchDoesntHaveInfo
 import pandas as pd
 import numpy as np
 import requests
