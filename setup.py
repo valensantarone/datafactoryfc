@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="datafactoryfc",
-    version="1.0.0",
+    version="1.0.3",
     author="Valko",
     author_email="valensantarone@gmail.com",
     description="Scrape football data from DataFactory",
@@ -11,9 +11,11 @@ setup(
     url="https://www.github.com/valensantarone/datafactory",
     packages=find_packages(),
     install_requires=[
+        "importlib",
         "requests",
         "pandas",
-        "numpy"
+        "numpy",
+        "json"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -22,6 +24,6 @@ setup(
     ],
     python_requires='>=3.6',
     package_data={
-        'datafactoryfc': ['data/xTGrid.json'],
+        'datafactoryfc': ['assets/xTGrid.json'],
     },
 )

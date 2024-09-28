@@ -1,10 +1,9 @@
-import importlib.resources as pkg_resources
+import importlib.resources
 import pandas as pd
 import numpy as np
 import requests
 import json
 from .exceptions import MatchDoesntHaveInfo, InvalidMatchInput
-from datafactoryfc import assets
 
 def _match_input_validation(match_input):
     if isinstance(match_input, list):
@@ -277,8 +276,7 @@ def get_corners(match_input, with_xT=True):
     return df
 
 def xT(df):
-    with pkg_resources.open_text(assets, 'xTGrid.json') as f:
-        xT = json.load(f)
+    xT = pd.read_json("./assets/xTGrid.json")
     xT = np.array(xT)
     xT_rows, xT_cols = xT.shape
     
