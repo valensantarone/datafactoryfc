@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="datafactory",
+    name="data-factory",
     version="1.0.0",
     author="Valko",
     author_email="valensantarone@gmail.com",
