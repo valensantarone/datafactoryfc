@@ -14,8 +14,7 @@ setup(
         "importlib",
         "requests",
         "pandas",
-        "numpy",
-        "json"
+        "numpy"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
