@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="datafactoryfc",
-    version="1.0.4",
+    version="1.0.5",
     author="Valko",
     author_email="valensantarone@gmail.com",
     description="Scrape football data from DataFactory",
