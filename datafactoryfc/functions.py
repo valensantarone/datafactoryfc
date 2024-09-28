@@ -4,7 +4,7 @@ import numpy as np
 import requests
 import json
 from .exceptions import MatchDoesntHaveInfo, InvalidMatchInput
-from datafactory import assets
+from datafactoryfc import assets
 
 def _match_input_validation(match_input):
     if isinstance(match_input, list):
@@ -95,6 +95,7 @@ def get_passes(match_input, all_passes=True, with_xT=True):
     Args:
         match_input (list or dict): Either the match data (JSON) or list with league and match_id.
         all_passes (bool): If True, return both correct and incorrect passes.
+        with_xT (bool): If True, return xT value for each pass.
 
     Returns:
         pd.DataFrame: DataFrame with all pass information.
@@ -203,11 +204,12 @@ def get_fouls(match_input):
     return df
 
 
-def get_throwins(match_input):
+def get_throwins(match_input, with_xT=True):
     """Retrieve all throw-ins from both teams of a match.
     
     Args:
         match_input (list or dict): Either match data (JSON) or list with league and match_id.
+        with_xT (bool): If True, return xT value for each pass.
 
     Returns:
         pd.DataFrame: DataFrame with throw-in information.
@@ -233,13 +235,17 @@ def get_throwins(match_input):
     df = df[['teamId', 'teamName', 'minute', 'seconds', 'playerId', 'playerName', 'x', 'y', 'endX', 'endY']]
     df = df.reset_index(drop=True)
     
+    if with_xT:
+        df = xT(df)
+    
     return df
 
-def get_corners(match_input):
+def get_corners(match_input, with_xT=True):
     """Retrieve all corner kicks from both teams of a match.
     
     Args:
         match_input (list or dict): Either match data (JSON) or list with league and match_id.
+        with_xT (bool): If True, return xT value for each pass.
 
     Returns:
         pd.DataFrame: DataFrame with corner kick information.
@@ -264,6 +270,9 @@ def get_corners(match_input):
     
     df = df[['teamId', 'teamName', 'minute', 'seconds', 'playerId', 'playerName', 'x', 'y', 'endX', 'endY']]
     df = df.reset_index(drop=True)
+    
+    if with_xT:
+        df = xT(df)
     
     return df
 

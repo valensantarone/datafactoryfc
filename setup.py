@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="data-factory",
+    name="datafactoryfc",
     version="1.0.0",
     author="Valko",
     author_email="valensantarone@gmail.com",
@@ -22,6 +22,6 @@ setup(
     ],
     python_requires='>=3.6',
     package_data={
-        'datafactory': ['data/xTGrid.json'],
+        'datafactoryfc': ['data/xTGrid.json'],
     },
 )
