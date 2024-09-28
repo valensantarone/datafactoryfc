@@ -1,7 +1,10 @@
-from .exceptions import MatchDoesntHaveInfo, InvalidMatchInput
+import importlib.resources as pkg_resources
 import pandas as pd
 import numpy as np
 import requests
+import json
+from .exceptions import MatchDoesntHaveInfo, InvalidMatchInput
+from datafactory import assets
 
 def _match_input_validation(match_input):
     if isinstance(match_input, list):
@@ -86,7 +89,7 @@ def get_data(league, match_id):
     response.raise_for_status()
     return response.json()
 
-def get_passes(match_input, all_passes=True):
+def get_passes(match_input, all_passes=True, with_xT=True):
     """Retrieve passes from the match (both correct and incorrect).
     
     Args:
@@ -124,6 +127,10 @@ def get_passes(match_input, all_passes=True):
     df['teamName'] = df['teamId'].apply(lambda team_id: _get_team_name(team_id, data))
 
     df = df[['teamId', 'teamName', 'minute', 'seconds', 'playerId', 'playerName', 'receiverId', 'receiverName', 'x', 'y', 'endX', 'endY', 'isProgressive']]
+    
+    if with_xT:
+        df = xT(df)
+        
     return df
 
 def get_shots(match_input):
@@ -259,3 +266,39 @@ def get_corners(match_input):
     df = df.reset_index(drop=True)
     
     return df
+
+def xT(df):
+    with pkg_resources.open_text(assets, 'xTGrid.json') as f:
+        xT = json.load(f)
+    xT = np.array(xT)
+    xT_rows, xT_cols = xT.shape
+    
+    df['x_xT'] = df['x'] * 1.05
+    df['y_xT'] = df['y'] * 0.68
+    df['endX_xT'] = df['endX'] * 1.05
+    df['endY_xT'] = df['endY'] * 0.68
+    
+    df_xT = df.dropna(subset=['x_xT', 'y_xT', 'endX_xT', 'endY_xT'])
+
+    df_xT['x1_bin'] = pd.cut(df_xT['x_xT'], bins=xT_cols, labels=False)
+    df_xT['y1_bin'] = pd.cut(df_xT['y_xT'], bins=xT_rows, labels=False)
+
+    df_xT['x2_bin'] = pd.cut(df_xT['endX_xT'], bins=xT_cols, labels=False)
+    df_xT['y2_bin'] = pd.cut(df_xT['endY_xT'], bins=xT_rows, labels=False)
+
+    df_xT['x1_bin'] = df_xT['x1_bin'].astype(int)
+    df_xT['y1_bin'] = df_xT['y1_bin'].astype(int)
+    df_xT['x2_bin'] = df_xT['x2_bin'].astype(int)
+    df_xT['y2_bin'] = df_xT['y2_bin'].astype(int)
+    
+    df_xT['start_zone_value'] = df_xT.apply(lambda x: xT[x['y1_bin']][x['x1_bin']], axis=1)
+    df_xT['end_zone_value'] = df_xT.apply(lambda x: xT[x['y2_bin']][x['x2_bin']], axis=1)
+    
+    df_xT['xT'] = df_xT['end_zone_value'] - df_xT['start_zone_value']
+    
+    if 'receiverId' in df_xT.columns:
+        df_xT['xT'] = np.where(pd.isna(df_xT['receiverId']), 0, df_xT['xT'])
+    
+    df_xT = df_xT.drop(columns=['x1_bin', 'y1_bin', 'x2_bin', 'y2_bin', 'start_zone_value', 'end_zone_value', 'x_xT', 'y_xT', 'endX_xT', 'endY_xT'])
+    
+    return df_xT
