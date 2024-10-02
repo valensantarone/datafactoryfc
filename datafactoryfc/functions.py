@@ -23,12 +23,12 @@ def _match_input_validation(match_input):
 def _process_coordinates(df, has_end=True):
     """Process the coordinates (x, y) and optionally the end coordinates (endX, endY)."""
     
-    df['x'] = df['coord'].apply(lambda c: c['1']['x'])
-    df['y'] = df['coord'].apply(lambda c: c['1']['y'])
+    df['x'] = df['coord'].apply(lambda c: c['1']['x'] if isinstance(c, dict) and '1' in c else None)
+    df['y'] = df['coord'].apply(lambda c: c['1']['y'] if isinstance(c, dict) and '1' in c else None)
 
     if has_end:
-        df['endX'] = df['coord'].apply(lambda c: c['2']['x'])
-        df['endY'] = df['coord'].apply(lambda c: c['2']['y'])
+        df['endX'] = df['coord'].apply(lambda c: c['2']['x'] if isinstance(c, dict) and '2' in c else None)
+        df['endY'] = df['coord'].apply(lambda c: c['2']['y'] if isinstance(c, dict) and '2' in c else None)
         df[['endX', 'endY']] = (df[['endX', 'endY']] + 1) * 50
     
     df[['x', 'y']] = (df[['x', 'y']] + 1) * 50
