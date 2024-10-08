@@ -45,7 +45,9 @@ def _process_coordinates(df, awayTeamId, has_end=True):
         
     df.drop('coord', axis=1, inplace=True)
     
-    df.loc[df['team'] == awayTeamId, ['x', 'y', 'endX', 'endY']] = 100 - df.loc[df['team'] == awayTeamId, ['x', 'y', 'endX', 'endY']]
+    df.loc[df['team'] == awayTeamId, ['x', 'y']] = 100 - df.loc[df['team'] == awayTeamId, ['x', 'y']]
+    if has_end:
+        df.loc[df['team'] == awayTeamId, ['endX', 'endY']] = 100 - df.loc[df['team'] == awayTeamId, ['endX', 'endY']]
     
     return df
 
@@ -149,11 +151,12 @@ def get_shots(match_input):
     """
     
     data = _match_input_validation(match_input)
+    awayTeamId = data['match']['awayTeamId']
 
     shots = data['incidences']['shots']
     df = pd.DataFrame.from_dict(shots, orient='index')
 
-    df = _process_coordinates(df)
+    df = _process_coordinates(df, awayTeamId)
     df = _process_time(df)
 
     df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
@@ -191,11 +194,12 @@ def get_fouls(match_input):
     """
     
     data = _match_input_validation(match_input)
+    awayTeamId = data['match']['awayTeamId']
 
     fouls = data['incidences']['fouls']
     df = pd.DataFrame.from_dict(fouls, orient='index')
 
-    df = _process_coordinates(df, has_end=False)
+    df = _process_coordinates(df, awayTeamId, has_end=False)
     df = _process_time(df)
 
     df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
@@ -220,11 +224,12 @@ def get_throwins(match_input, with_xT=True):
     """
     
     data = _match_input_validation(match_input)
+    awayTeamId = data['match']['awayTeamId']
 
     throwin = data['incidences']['throwIn']
     df = pd.DataFrame.from_dict(throwin, orient='index')
     
-    df = _process_coordinates(df)
+    df = _process_coordinates(df, awayTeamId)
     df = _process_time(df)
     
     df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
@@ -256,11 +261,12 @@ def get_corners(match_input, with_xT=True):
     """
     
     data = _match_input_validation(match_input)
+    awayTeamId = data['match']['awayTeamId']
     
     corners = data['incidences']['cornerKicks']
     df = pd.DataFrame.from_dict(corners, orient='index')
 
-    df = _process_coordinates(df)
+    df = _process_coordinates(df, awayTeamId)
     df = _process_time(df)
     
     df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
