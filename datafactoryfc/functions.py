@@ -20,7 +20,7 @@ def _match_input_validation(match_input):
 
     return data
 
-def _process_coordinates(df, has_end=True):
+def _process_coordinates(df, awayTeamId, has_end=True):
     """Process the coordinates (x, y) and optionally the end coordinates (endX, endY)."""
     
     df['x'] = df['coord'].apply(lambda c: c['1']['x'] if isinstance(c, dict) and '1' in c else None)
@@ -42,8 +42,11 @@ def _process_coordinates(df, has_end=True):
     df['y'] = 100 - df['y']
     if has_end:
         df['endY'] = 100 - df['endY']
-
+        
     df.drop('coord', axis=1, inplace=True)
+    
+    df.loc[df['team'] == awayTeamId, ['x', 'y', 'endX', 'endY']] = 100 - df.loc[df['team'] == awayTeamId, ['x', 'y', 'endX', 'endY']]
+    
     return df
 
 def _process_time(df):
@@ -102,6 +105,7 @@ def get_passes(match_input, all_passes=True, with_xT=True):
     """
     
     data = _match_input_validation(match_input)
+    awayTeamId = data['match']['awayTeamId']
     
     passes = data['incidences'].get('correctPasses', {})
     if not passes:
@@ -114,7 +118,7 @@ def get_passes(match_input, all_passes=True, with_xT=True):
         df_incorrect = pd.DataFrame.from_dict(incorrect_passes, orient='index')
         df = pd.concat([df, df_incorrect])
 
-    df = _process_coordinates(df)
+    df = _process_coordinates(df, awayTeamId)
     df = _process_time(df)
 
     df['playerName'] = df['plyrId'].apply(lambda x: _get_player_name(x, data))
